@@ -361,7 +361,7 @@ const CalculusConcepts: React.FC = () => {
           // Update progress every minute
           if (newTime % 60 === 0) {
             updateProgress(conceptId, {
-              timeSpent: newTime
+              studyTime: newTime
             });
           }
           return newTime;

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 const Login: React.FC = () => {
@@ -9,12 +9,18 @@ const Login: React.FC = () => {
   const [name, setName] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const { login, signup } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get the redirect path from location state or default to dashboard
+  const from = (location.state as any)?.from || '/dashboard';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
 
     try {
       if (isSignUp) {
@@ -26,9 +32,11 @@ const Login: React.FC = () => {
       } else {
         await login(email, password);
       }
-      navigate('/dashboard');
+      navigate(from, { replace: true });
     } catch (err) {
       setError(isSignUp ? 'Failed to create account.' : 'Failed to log in. Please check your credentials.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -144,14 +152,23 @@ const Login: React.FC = () => {
             <div>
               <button
                 type="submit"
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+                disabled={isLoading}
+                className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 ${
+                  isLoading ? 'opacity-75 cursor-not-allowed' : ''
+                }`}
               >
-                <span className="absolute left-0 inset-y-0 flex items-center pl-3">
-                  <svg className="h-5 w-5 text-blue-500 group-hover:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
-                </span>
-                {isSignUp ? 'Create Account' : 'Sign in'}
+                {isLoading ? (
+                  <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <>
+                    <span className="absolute left-0 inset-y-0 flex items-center pl-3">
+                      <svg className="h-5 w-5 text-blue-500 group-hover:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
+                    </span>
+                    {isSignUp ? 'Create Account' : 'Sign in'}
+                  </>
+                )}
               </button>
             </div>
 
@@ -159,6 +176,7 @@ const Login: React.FC = () => {
               <button
                 type="button"
                 onClick={toggleMode}
+                disabled={isLoading}
                 className="font-medium text-blue-600 hover:text-blue-500 focus:outline-none focus:underline transition-colors duration-200"
               >
                 {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
