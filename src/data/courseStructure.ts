@@ -1,127 +1,244 @@
-interface Lesson {
-  id: string;
-  title: string;
-  description: string;
-  duration: number; // in minutes
-  type: 'video' | 'reading' | 'quiz' | 'practice';
-  content: string;
-  prerequisites: string[];
-}
+import { Module, Lesson, Course } from '../types/course';
 
-interface Module {
-  id: string;
-  title: string;
-  description: string;
-  lessons: Lesson[];
-  order: number;
-}
-
-export const calculus101: Module[] = [
-  {
-    id: 'foundations',
-    title: 'Foundations of Calculus',
-    description: 'Master the fundamental concepts that form the basis of calculus',
-    order: 1,
-    lessons: [
+export const courses: Record<string, Course> = {
+  calculus101: {
+    id: 'calculus101',
+    title: 'Calculus 101',
+    description: 'Introduction to calculus concepts including limits, derivatives, and integration.',
+    modules: [
       {
-        id: 'limits-intro',
-        title: 'Introduction to Limits',
-        description: 'Understand what limits are and why they are important',
-        duration: 15,
-        type: 'video',
-        content: 'limits-intro-content',
-        prerequisites: []
+        id: 'limits',
+        title: 'Limits and Continuity',
+        description: 'Understanding the fundamental concept of limits in calculus.',
+        lessons: [
+          {
+            id: 'limits-intro',
+            title: 'Introduction to Limits',
+            type: 'reading',
+            duration: 15,
+            content: 'limits-intro-content',
+            prerequisites: []
+          },
+          {
+            id: 'limits-practice',
+            title: 'Practice with Limits',
+            type: 'practice',
+            duration: 20,
+            content: 'limits-practice-content',
+            prerequisites: ['limits-intro']
+          },
+          {
+            id: 'limits-quiz',
+            title: 'Limits Quiz',
+            type: 'quiz',
+            duration: 10,
+            content: 'limits-quiz-content',
+            prerequisites: ['limits-practice']
+          }
+        ]
       },
       {
-        id: 'limits-practice',
-        title: 'Working with Limits',
-        description: 'Practice solving limit problems',
-        duration: 30,
-        type: 'practice',
-        content: 'limits-practice-content',
-        prerequisites: ['limits-intro']
+        id: 'derivatives',
+        title: 'Derivatives',
+        description: 'Learn about derivatives and their applications.',
+        lessons: [
+          {
+            id: 'derivatives-intro',
+            title: 'Introduction to Derivatives',
+            type: 'reading',
+            duration: 20,
+            content: 'derivatives-intro-content',
+            prerequisites: ['limits-quiz']
+          },
+          {
+            id: 'derivatives-practice',
+            title: 'Practice with Derivatives',
+            type: 'practice',
+            duration: 25,
+            content: 'derivatives-practice-content',
+            prerequisites: ['derivatives-intro']
+          },
+          {
+            id: 'derivatives-quiz',
+            title: 'Derivatives Quiz',
+            type: 'quiz',
+            duration: 15,
+            content: 'derivatives-quiz-content',
+            prerequisites: ['derivatives-practice']
+          }
+        ]
       },
       {
-        id: 'limits-quiz',
-        title: 'Limits Assessment',
-        description: 'Test your understanding of limits',
-        duration: 20,
-        type: 'quiz',
-        content: 'limits-quiz-content',
-        prerequisites: ['limits-practice']
+        id: 'integration',
+        title: 'Integration',
+        description: 'Master the techniques of integration.',
+        lessons: [
+          {
+            id: 'integration-intro',
+            title: 'Introduction to Integration',
+            type: 'reading',
+            duration: 20,
+            content: 'integration-intro-content',
+            prerequisites: ['derivatives-quiz']
+          },
+          {
+            id: 'integration-practice',
+            title: 'Practice with Integration',
+            type: 'practice',
+            duration: 25,
+            content: 'integration-practice-content',
+            prerequisites: ['integration-intro']
+          },
+          {
+            id: 'integration-quiz',
+            title: 'Integration Quiz',
+            type: 'quiz',
+            duration: 15,
+            content: 'integration-quiz-content',
+            prerequisites: ['integration-practice']
+          }
+        ]
       }
     ]
   },
-  {
-    id: 'derivatives',
-    title: 'Derivatives and Applications',
-    description: 'Learn about rates of change and slopes of curves',
-    order: 2,
-    lessons: [
+  linearAlgebra: {
+    id: 'linearAlgebra',
+    title: 'Linear Algebra',
+    description: 'Explore vectors, matrices, and linear transformations.',
+    modules: [
       {
-        id: 'derivatives-intro',
-        title: 'Understanding Derivatives',
-        description: 'Learn what derivatives represent and how to calculate them',
-        duration: 20,
-        type: 'video',
-        content: 'derivatives-intro-content',
-        prerequisites: ['limits-quiz']
+        id: 'vectors',
+        title: 'Vectors and Vector Spaces',
+        description: 'Understanding vectors and their properties.',
+        lessons: [
+          {
+            id: 'vectors-intro',
+            title: 'Introduction to Vectors',
+            type: 'reading',
+            duration: 15,
+            content: 'vectors-intro-content',
+            prerequisites: []
+          },
+          {
+            id: 'vectors-practice',
+            title: 'Vector Operations',
+            type: 'practice',
+            duration: 20,
+            content: 'vectors-practice-content',
+            prerequisites: ['vectors-intro']
+          },
+          {
+            id: 'vectors-quiz',
+            title: 'Vectors Quiz',
+            type: 'quiz',
+            duration: 10,
+            content: 'vectors-quiz-content',
+            prerequisites: ['vectors-practice']
+          }
+        ]
       },
       {
-        id: 'derivatives-reading',
-        title: 'Applications of Derivatives',
-        description: 'Explore real-world applications of derivatives',
-        duration: 25,
-        type: 'reading',
-        content: 'derivatives-applications-content',
-        prerequisites: ['derivatives-intro']
-      },
-      {
-        id: 'derivatives-practice',
-        title: 'Derivative Practice Problems',
-        description: 'Practice finding derivatives and solving related problems',
-        duration: 40,
-        type: 'practice',
-        content: 'derivatives-practice-content',
-        prerequisites: ['derivatives-reading']
+        id: 'matrices',
+        title: 'Matrices and Matrix Operations',
+        description: 'Learn about matrices and their applications.',
+        lessons: [
+          {
+            id: 'matrices-intro',
+            title: 'Introduction to Matrices',
+            type: 'reading',
+            duration: 20,
+            content: 'matrices-intro-content',
+            prerequisites: ['vectors-quiz']
+          },
+          {
+            id: 'matrices-practice',
+            title: 'Matrix Operations',
+            type: 'practice',
+            duration: 25,
+            content: 'matrices-practice-content',
+            prerequisites: ['matrices-intro']
+          },
+          {
+            id: 'matrices-quiz',
+            title: 'Matrices Quiz',
+            type: 'quiz',
+            duration: 15,
+            content: 'matrices-quiz-content',
+            prerequisites: ['matrices-practice']
+          }
+        ]
       }
     ]
   },
-  {
-    id: 'integration',
-    title: 'Integration Techniques',
-    description: 'Master the art of integration and its applications',
-    order: 3,
-    lessons: [
+  statistics: {
+    id: 'statistics',
+    title: 'Statistics and Probability',
+    description: 'Learn statistical concepts and probability theory.',
+    modules: [
       {
-        id: 'integration-intro',
-        title: 'Basics of Integration',
-        description: 'Learn what integrals are and basic integration techniques',
-        duration: 25,
-        type: 'video',
-        content: 'integration-intro-content',
-        prerequisites: ['derivatives-practice']
+        id: 'probability',
+        title: 'Probability Basics',
+        description: 'Understanding probability concepts and distributions.',
+        lessons: [
+          {
+            id: 'probability-intro',
+            title: 'Introduction to Probability',
+            type: 'reading',
+            duration: 15,
+            content: 'probability-intro-content',
+            prerequisites: []
+          },
+          {
+            id: 'probability-practice',
+            title: 'Probability Problems',
+            type: 'practice',
+            duration: 20,
+            content: 'probability-practice-content',
+            prerequisites: ['probability-intro']
+          },
+          {
+            id: 'probability-quiz',
+            title: 'Probability Quiz',
+            type: 'quiz',
+            duration: 10,
+            content: 'probability-quiz-content',
+            prerequisites: ['probability-practice']
+          }
+        ]
       },
       {
-        id: 'integration-methods',
-        title: 'Integration Methods',
-        description: 'Study different methods of integration',
-        duration: 35,
-        type: 'reading',
-        content: 'integration-methods-content',
-        prerequisites: ['integration-intro']
-      },
-      {
-        id: 'integration-practice',
-        title: 'Integration Practice',
-        description: 'Practice solving integration problems',
-        duration: 45,
-        type: 'practice',
-        content: 'integration-practice-content',
-        prerequisites: ['integration-methods']
+        id: 'statistical-inference',
+        title: 'Statistical Inference',
+        description: 'Learn about hypothesis testing and confidence intervals.',
+        lessons: [
+          {
+            id: 'inference-intro',
+            title: 'Introduction to Statistical Inference',
+            type: 'reading',
+            duration: 20,
+            content: 'inference-intro-content',
+            prerequisites: ['probability-quiz']
+          },
+          {
+            id: 'inference-practice',
+            title: 'Inference Problems',
+            type: 'practice',
+            duration: 25,
+            content: 'inference-practice-content',
+            prerequisites: ['inference-intro']
+          },
+          {
+            id: 'inference-quiz',
+            title: 'Inference Quiz',
+            type: 'quiz',
+            duration: 15,
+            content: 'inference-quiz-content',
+            prerequisites: ['inference-practice']
+          }
+        ]
       }
     ]
   }
-];
+};
 
-export type { Module, Lesson }; 
+export type CourseId = keyof typeof courses; 

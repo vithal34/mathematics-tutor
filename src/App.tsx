@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, Link, useParams, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Link, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
@@ -7,16 +7,27 @@ import CourseOverview from './components/CourseOverview';
 import LessonView from './components/LessonView';
 import MathVisualizer from './components/MathVisualizer';
 import CalculusConcepts from './components/CalculusConcepts';
-import MathQuiz from './components/MathQuiz';
+import Quiz from './components/Quiz';
 import VectorCalculus from './components/VectorCalculus';
 import VolumeOfRevolution from './components/VolumeOfRevolution';
 import TaylorSeries from './components/TaylorSeries';
 import FunctionTransformations from './components/FunctionTransformations';
 import { MathJaxContext } from 'better-react-mathjax';
+import { courses } from './data/courseStructure';
 
 const Navigation: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login', { state: { from: location.pathname } });
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
 
   return (
     <nav className="bg-white shadow-lg">
@@ -32,25 +43,41 @@ const Navigation: React.FC = () => {
               <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
                 <Link
                   to="/dashboard"
-                  className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                  className={`${
+                    location.pathname === '/dashboard'
+                      ? 'border-indigo-500 text-gray-900'
+                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                  } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
                 >
                   Dashboard
                 </Link>
                 <Link
                   to="/course/calculus101"
-                  className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                  className={`${
+                    location.pathname.startsWith('/course')
+                      ? 'border-indigo-500 text-gray-900'
+                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                  } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
                 >
                   Course
                 </Link>
                 <Link
                   to="/concepts"
-                  className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                  className={`${
+                    location.pathname === '/concepts'
+                      ? 'border-indigo-500 text-gray-900'
+                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                  } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
                 >
                   Concepts
                 </Link>
                 <Link
                   to="/quiz/limits"
-                  className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                  className={`${
+                    location.pathname.startsWith('/quiz')
+                      ? 'border-indigo-500 text-gray-900'
+                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                  } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
                 >
                   Quiz
                 </Link>
@@ -59,15 +86,15 @@ const Navigation: React.FC = () => {
           </div>
           <div className="flex items-center">
             {user ? (
-              <button
-                onClick={() => {
-                  logout();
-                  navigate('/login');
-                }}
-                className="ml-3 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-              >
-                Logout
-              </button>
+              <div className="flex items-center space-x-4">
+                <span className="text-sm text-gray-700">Welcome, {user.name}</span>
+                <button
+                  onClick={handleLogout}
+                  className="ml-3 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+                >
+                  Logout
+                </button>
+              </div>
             ) : (
               <Link
                 to="/login"
@@ -83,71 +110,115 @@ const Navigation: React.FC = () => {
   );
 };
 
-const ProtectedRoute: React.FC<{ element: React.ReactElement }> = ({ element }) => {
-  const { user } = useAuth();
-  return user ? element : <Navigate to="/login" />;
-};
+const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, loading } = useAuth();
 
-const QuizWrapper: React.FC = () => {
-  const { topic } = useParams<{ topic: 'limits' | 'derivatives' | 'integration' | 'series' }>();
-  return <MathQuiz topic={topic || 'limits'} />;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  return user ? <>{children}</> : <Navigate to="/login" />;
 };
 
 const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <MathJaxContext>
-        <Router>
+    <Router>
+      <AuthProvider>
+        <MathJaxContext>
           <div className="min-h-screen bg-gray-50">
             <Navigation />
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route
-                path="/dashboard"
-                element={<ProtectedRoute element={<Dashboard />} />}
+                path="/"
+                element={
+                  <PrivateRoute>
+                    <Dashboard />
+                  </PrivateRoute>
+                }
               />
               <Route
-                path="/course/calculus101"
-                element={<ProtectedRoute element={<CourseOverview />} />}
+                path="/course/:courseId/module/:moduleId"
+                element={
+                  <PrivateRoute>
+                    <LessonView />
+                  </PrivateRoute>
+                }
               />
               <Route
-                path="/learn/:lessonId"
-                element={<ProtectedRoute element={<LessonView />} />}
+                path="/course/:courseId/module/:moduleId/quiz/:lessonId"
+                element={
+                  <PrivateRoute>
+                    <Quiz />
+                  </PrivateRoute>
+                }
               />
               <Route
                 path="/concepts"
-                element={<ProtectedRoute element={<CalculusConcepts />} />}
+                element={
+                  <PrivateRoute>
+                    <CalculusConcepts />
+                  </PrivateRoute>
+                }
               />
               <Route
-                path="/quiz/:topic"
-                element={<ProtectedRoute element={<QuizWrapper />} />}
+                path="/course/calculus101"
+                element={
+                  <PrivateRoute>
+                    <CourseOverview />
+                  </PrivateRoute>
+                }
               />
               <Route
                 path="/visualizer/:concept"
-                element={<ProtectedRoute element={<MathVisualizer concept="limits" />} />}
+                element={
+                  <PrivateRoute>
+                    <MathVisualizer concept="limits" />
+                  </PrivateRoute>
+                }
               />
               <Route
                 path="/vector-calculus"
-                element={<ProtectedRoute element={<VectorCalculus />} />}
+                element={
+                  <PrivateRoute>
+                    <VectorCalculus />
+                  </PrivateRoute>
+                }
               />
               <Route
                 path="/volume-of-revolution"
-                element={<ProtectedRoute element={<VolumeOfRevolution />} />}
+                element={
+                  <PrivateRoute>
+                    <VolumeOfRevolution />
+                  </PrivateRoute>
+                }
               />
               <Route
                 path="/taylor-series"
-                element={<ProtectedRoute element={<TaylorSeries />} />}
+                element={
+                  <PrivateRoute>
+                    <TaylorSeries />
+                  </PrivateRoute>
+                }
               />
               <Route
                 path="/function-transformations"
-                element={<ProtectedRoute element={<FunctionTransformations />} />}
+                element={
+                  <PrivateRoute>
+                    <FunctionTransformations />
+                  </PrivateRoute>
+                }
               />
               <Route path="/" element={<Navigate to="/dashboard" />} />
             </Routes>
           </div>
-        </Router>
-      </MathJaxContext>
-    </AuthProvider>
+        </MathJaxContext>
+      </AuthProvider>
+    </Router>
   );
 };
 
